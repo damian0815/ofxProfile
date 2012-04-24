@@ -1,5 +1,6 @@
-
 **ofxProfile**
+
+by Damian Stewart <http://damianstewart.com>
 
 A thread-safe profiler. Stores and manages execution count, total execution time and average time per execution of each labelled section, separated by thread.
 
@@ -10,7 +11,7 @@ To use in a particular cpp file, you need to #define PROFILE either globally or 
 
 Then use the following macros to profile parts of code:
 
-* ofxProfileSectionPush(label) and ofxProfileSectionPop()
+* `ofxProfileSectionPush(label)` and `ofxProfileSectionPop()`
 
   Profile code between these calls, storing results in a tree.
   For example:
@@ -41,13 +42,13 @@ Then use the following macros to profile parts of code:
 
   NOTE: all labels at a given level in the tree must be unique.
 
-* ofxProfileThisFunction()
+* `ofxProfileThisFunction()`
 
-  Automatically wraps the current function in a pair of ofxProfileSectionPush(functionName) and ofxProfileSectionPop() calls.
+  Automatically wraps the current function in a pair of `ofxProfileSectionPush(functionName)` and `ofxProfileSectionPop()` calls.
 
-* ofxProfileThisBlock(label)
+* `ofxProfileThisBlock(label)`
 
-  Wraps the current block (the code between the current level { and }) in a pair of ofxProfileSectionPush(label) and ofxProfileSectionPop() calls.  
+  Wraps the current block (the code between the current level `{` and `}`) in a pair of `ofxProfileSectionPush(label)` and `ofxProfileSectionPop()` calls.  
 
   eg:
 
@@ -58,13 +59,13 @@ Then use the following macros to profile parts of code:
             }
 
 
-To display profile results, call ofxProfile::display(). 
+To display profile results, call `ofxProfile::display()`. 
 
-To fetch results as a string, call ofxProfile::describe().
+To fetch results as a string, call `ofxProfile::describe()`.
 
-To clear current results, call ofxProfile::clear().
+To clear current results, call `ofxProfile::clear()`.
  
-*NOTES*
+**Notes**
  
 * If PROFILE is not #defined, the profiling code is not executed. This means you can leave profiling code in place for release builds and not have it impact on performance.
  
@@ -72,3 +73,5 @@ To clear current results, call ofxProfile::clear().
  
 * OpenGL may do all sorts of interesting things behind your back, that ofxProfiler doesn't know about. If you want to profile OpenGL calls please use a proper OpenGL profiler instead.
  
+
+original GitHub url: <http://github.com/damiannz/ofxProfile>
