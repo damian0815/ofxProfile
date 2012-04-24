@@ -1,33 +1,31 @@
 
-fxProfile
+**ofxProfile**
 
-    A thread-safe profiler. Stores and manages execution count, total execution time and 
-	average time per execution of each labelled section, separated by thread.
+A thread-safe profiler. Stores and manages execution count, total execution time and average time per execution of each labelled section, separated by thread.
 
-    To use in a particular cpp file, you need to #define PROFILE either globally or in that 
-	file, and #include the ofxProfile.h header. 
+To use in a particular cpp file, you need to #define PROFILE either globally or in that file, and #include the ofxProfile.h header. 
 
 	#define PROFILE
 	#include "ofxProfile.h"
 
-    Then use the following macros to profile parts of code:
+Then use the following macros to profile parts of code:
 
-    * ofxProfileSectionPush(label) and ofxProfileSectionPop()
+* ofxProfileSectionPush(label) and ofxProfileSectionPop()
 
-        Profile code between these calls, storing results in a tree.
-        For example:
+  Profile code between these calls, storing results in a tree.
+  For example:
 
-            .. unprofiled preprocessing
-            ofxProfileSectionPush("partial section");
-            .. code to be profiled
-            ofxProfileSectionPop();
-            .. unprofiled postprocessing
+        .. unprofiled preprocessing
+        ofxProfileSectionPush("partial section");
+        .. code to be profiled
+        ofxProfileSectionPop();
+        .. unprofiled postprocessing
 
-        Or for nested output:
+  Or for nested output:
 
-            ofxProfileSectionPush("two-step process");
-                .. preprocessing code
-                ofxProfileSectionPush("step 1");
+        ofxProfileSectionPush("two-step process");
+            .. preprocessing code
+            ofxProfileSectionPush("step 1");
                 .. step 1 code
                 ofxProfileSectionPop();
                 ofxProfileSectionPush("step 2");
@@ -35,26 +33,23 @@ fxProfile
                 ofxProfileSectionPop();
             ofxProfileSectionPop();
 
-        will produce output like this:
+  will produce output like this:
  
             + two-step process      <total time for steps 1 + 2 + preprocessing> ...
 			  + step 1              <time for step 1> ...
 			  + step 2              <time for step 2> ...
 
-        NOTE: all labels at a given level in the tree must be unique.
+  NOTE: all labels at a given level in the tree must be unique.
 
-    * ofxProfileThisFunction()
+* ofxProfileThisFunction()
 
-        Automatically wraps the current function in a pair of
-        ofxProfileSectionPush(functionName) and ofxProfileSectionPop() calls.
+  Automatically wraps the current function in a pair of ofxProfileSectionPush(functionName) and ofxProfileSectionPop() calls.
 
-    * ofxProfileThisBlock(label)
+* ofxProfileThisBlock(label)
 
-        Wraps the current block (the code between the current level { and })
-        in a pair of ofxProfileSectionPush(label) and ofxProfileSectionPop()
-        calls.
+  Wraps the current block (the code between the current level { and }) in a pair of ofxProfileSectionPush(label) and ofxProfileSectionPop() calls.  
 
-        eg:
+  eg:
 
             if ( test_condition )
             {
@@ -63,19 +58,17 @@ fxProfile
             }
 
 
-    To display profile results, call ofxProfile::display(). 
-	To fetch results as a string, call ofxProfile::describe().
-	To clear current results, call ofxProfile::clear().
+To display profile results, call ofxProfile::display(). 
+
+To fetch results as a string, call ofxProfile::describe().
+
+To clear current results, call ofxProfile::clear().
  
-	NOTES
+*NOTES*
  
-	If PROFILE is not #defined, the profiling code is not executed. This means you can leave
-	profiling code in place for release builds and not have it impact on performance.
+* If PROFILE is not #defined, the profiling code is not executed. This means you can leave profiling code in place for release builds and not have it impact on performance.
  
-	Profiling is invasive, this means it will have an impact on execution times. Output from 
-	ofxProfile is therefore not 100% accurate but is usually good enough to help nail down
-	performance bottlenecks.
+* Profiling is invasive, this means it will have an impact on execution times. Output from ofxProfile is therefore not 100% accurate but is usually good enough to help nail down performance bottlenecks.
  
-	OpenGL may do all sorts of interesting things behind your back, that ofxProfiler doesn't 
-	kno about. If you want to profile OpenGL calls please use a proper OpenGL profiler instead.
+* OpenGL may do all sorts of interesting things behind your back, that ofxProfiler doesn't know about. If you want to profile OpenGL calls please use a proper OpenGL profiler instead.
  
