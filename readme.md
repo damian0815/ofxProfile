@@ -28,11 +28,11 @@ Then use the following macros to profile parts of code:
             .. preprocessing code
             ofxProfileSectionPush("step 1");
                 .. step 1 code
-                ofxProfileSectionPop();
-                ofxProfileSectionPush("step 2");
-                .. step 2 code
-                ofxProfileSectionPop();
             ofxProfileSectionPop();
+            ofxProfileSectionPush("step 2");
+                .. step 2 code
+            ofxProfileSectionPop();
+        ofxProfileSectionPop();
 
   will produce output like this:
  
