@@ -1,6 +1,6 @@
 #include "testApp.h"
 #define PROFILE
-#include "ofxProfiler.h"
+#include "ofxProfile.h"
 
 //--------------------------------------------------------------
 void testApp::setup(){
@@ -14,34 +14,40 @@ void testApp::setup(){
 //--------------------------------------------------------------
 void testApp::update(){
 
-	PROFILE_THIS_FUNCTION();
+	ofxProfileThisBlock();
 	
-	PROFILE_SECTION_PUSH("if and sleep");
+	ofxProfileSectionPush("if and sleep");
 	// sleep 1 ms every second frame
 	if ( ofGetFrameNum() % 2 == 0 )
 	{
-		PROFILE_THIS_BLOCK("sleep");
+		ofxProfileThisBlock("sleep 1ms every 2nd frame");
 		ofSleepMillis(1);
 	}
-	PROFILE_SECTION_POP();
+	ofxProfileSectionPop();
 	
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
-	PROFILE_THIS_FUNCTION();
+	ofxProfileThisFunction();
 	
-	PROFILE_SECTION_PUSH("draw circle");
-	ofCircle( ofGetFrameNum()%ofGetWidth(), 50, 10 );
-	PROFILE_SECTION_POP();
+	ofxProfileSectionPush("draw circle");
+	ofxProfileSectionPush("calculate radius");
+	ofxProfileSectionPush("sin");
+	float sinus = sin( ofGetElapsedTimef() );
+	ofxProfileSectionPop(); // pop "sin"
+	float radius = 0.5f*(sinus+1.0f) * 30 + 10;
+	ofxProfileSectionPop(); // pop "calculate radius"
+	ofCircle( ofGetFrameNum()%ofGetWidth(), 50, radius );
+	ofxProfileSectionPop(); // pop "draw circle"
 	
-	PROFILE_SECTION_PUSH("draw dump");
-	ofDrawBitmapString( lastDump, ofPoint( 10, 100 ) );
-	PROFILE_SECTION_POP();
+	ofxProfileSectionPush("draw profiler information");
+	ofDrawBitmapString( lastDump, ofPoint( 10, 120 ) );
+	ofxProfileSectionPop();
 	
-	PROFILE_SECTION_PUSH("draw instruction text");
-	ofDrawBitmapString( "press 'd' to update profile dump, 'c' to clear profile data", ofPoint( 10, ofGetHeight()-20 ) );
-	PROFILE_SECTION_POP();
+	ofxProfileSectionPush("draw instruction text");
+	ofDrawBitmapString( "press 'd' to update profile information, 'c' to clear profile data", ofPoint( 10, ofGetHeight()-20 ) );
+	ofxProfileSectionPop();
 	
 }
 
@@ -49,9 +55,12 @@ void testApp::draw(){
 void testApp::keyPressed(int key){
 
 	if ( key == 'd' )
-		lastDump = ofxProfiler::Describe();
+		lastDump = ofxProfile::Describe();
 	else if ( key == 'c' )
-		ofxProfiler::Clear();
+	{
+		ofxProfile::Clear();
+		lastDump = "";
+	}
 }
 
 //--------------------------------------------------------------
