@@ -1,31 +1,41 @@
-/*
- Copyright 2008, 2009, 2010 Damian Stewart <damian@frey.co.nz>.
+/***********************************************************************
+ * Copyright (c) 2006-2012 Damian Stewart http://damianstewart.com
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of MSA Visuals nor the names of its contributors 
+ *       may be used to endorse or promote products derived from this software
+ *       without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS 
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE. 
+ *
+ * ***********************************************************************/ 
 
- This file is part of The Artvertiser.
-
- The Artvertiser is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- The Artvertiser is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public License
- along with The Artvertiser.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#include "ofxProfiler.h"
+#include "ofxProfile.h"
 
 #include <algorithm>
 #include "ofThread.h"
 #include "ofConstants.h"
 #include "ofUtils.h"
 
-ofxProfiler::ofxProfileContexts ofxProfiler::contexts;
-ofMutex ofxProfiler::lock;
+ofxProfile::ofxProfileContexts ofxProfile::contexts;
+ofMutex ofxProfile::lock;
 
 int ofxProfileSection::EXEC_ORDER_ID = 0;
 
@@ -35,7 +45,7 @@ ofxProfileContext::~ofxProfileContext()
         delete toplevel;
 }
 
-ofxProfileContext* ofxProfiler::GetContext()
+ofxProfileContext* ofxProfile::GetContext()
 {
 	ofThread* currentThread = ofThread::getCurrentThread();
 	lock.lock();
@@ -67,7 +77,7 @@ ofxProfileContext* ofxProfiler::GetContext()
 
 
 
-void ofxProfiler::Clear()
+void ofxProfile::Clear()
 {
     // get lock
     lock.lock();
@@ -83,7 +93,7 @@ void ofxProfiler::Clear()
 
 }
 
-void ofxProfiler::SectionPush(const std::string &name)
+void ofxProfile::SectionPush(const std::string &name)
 {
 	ofxProfileContext* context = GetContext();
 	assert( context->current );
@@ -109,7 +119,7 @@ void ofxProfiler::SectionPush(const std::string &name)
 }
 
 
-void ofxProfiler::SectionPop()
+void ofxProfile::SectionPop()
 {
     unsigned long endTime = ofGetElapsedTimeMicros();
  
@@ -125,23 +135,23 @@ void ofxProfiler::SectionPop()
     unsigned long timeMicros = endTime - s->timer;
 
 	// work out the new avg time and increment the call count
-	double totalTimeMicros = timeMicros + s->avgTime * s->callCount;
+	s->totalTime += timeMicros;
 	s->callCount++;
-	s->avgTime = totalTimeMicros/s->callCount;
 
 	// shift current up
 	context->current = context->current->parent;
 }
 
-string ofxProfiler::Describe( ofxProfiler::SORT_BY sort )
+string ofxProfile::Describe( ofxProfile::SORT_BY sort )
 {
 	string output = "";
 	char buf[1024];
 	output += "---------------------------------------------------------------------------------------\n";
     // re-use formatting from individual lines
-    sprintf( buf, "ofxProfiler output: sorted by %-15s            total    average   execution\n", (sort==SORT_EXECUTION?"execution order":"total time"));
+	sprintf( buf, "ofxProfile output: sorted by %-15s", (sort==SORT_EXECUTION?"execution order":"total time") );
+    sprintf( buf, "%-52s  %10s  %10s  %6s\n", buf, "total  ", "average  ", "execution" );
 	output += buf;
-    sprintf( buf, "%-50s  %10s  %10s  %6s\n", "name                                values in ms ->", "time  ", "time    ", "count" );
+    sprintf( buf, "%-52s  %10s  %10s  %6s\n", "name", "time (ms)", "time (ms) ", " count" );
 	output += buf;
     output += "---------------------------------------------------------------------------------------\n";
 	lock.lock();
@@ -165,7 +175,7 @@ string ofxProfiler::Describe( ofxProfiler::SORT_BY sort )
 ofxProfileSection::ofxProfileSection()
 {
 	parent = NULL;
-	avgTime = 0;
+	totalTime = 0;
 	callCount = 0;
 	execOrderId = EXEC_ORDER_ID++;
 }
@@ -183,7 +193,7 @@ ofxProfileSection::~ofxProfileSection()
 
 bool reverse_time_comparator( ofxProfileSection* a, ofxProfileSection* b )
 {
-    return a->avgTime*a->callCount > b->avgTime*b->callCount;
+    return a->totalTime > b->totalTime;
 }
 
 bool execution_order_comparator( ofxProfileSection* a, ofxProfileSection* b )
@@ -191,7 +201,7 @@ bool execution_order_comparator( ofxProfileSection* a, ofxProfileSection* b )
     return a->execOrderId < b->execOrderId;
 }
 
-string ofxProfileSection::Describe( const std::string& prefix, ofxProfiler::SORT_BY sort_by )
+string ofxProfileSection::Describe( const std::string& prefix, ofxProfile::SORT_BY sort_by )
 {
     std::vector<ofxProfileSection* > childrenVect;
 	for ( ofxProfileSections::iterator i = children.begin();
@@ -202,11 +212,11 @@ string ofxProfileSection::Describe( const std::string& prefix, ofxProfiler::SORT
 	}
 
     // sort by ..
-    if ( sort_by == ofxProfiler::SORT_TIME )
+    if ( sort_by == ofxProfile::SORT_TIME )
     {
         std::sort( childrenVect.begin(), childrenVect.end(), reverse_time_comparator );
     }
-    else if ( sort_by == ofxProfiler::SORT_EXECUTION )
+    else if ( sort_by == ofxProfile::SORT_EXECUTION )
     {
         std::sort( childrenVect.begin(), childrenVect.end(), execution_order_comparator );
     }
@@ -223,8 +233,8 @@ string ofxProfileSection::Describe( const std::string& prefix, ofxProfiler::SORT
         else
             name = sect->name;
 		sprintf( buf, "%-50s  %10.2f  %10.5f  %6d\n", name.c_str(),
-				  0.001 * sect->avgTime * sect->callCount,
-				  0.001 * sect->avgTime, sect->callCount );
+				  0.001 * sect->totalTime,
+				  0.001 * double(sect->totalTime)/sect->callCount, sect->callCount );
 		output += buf;
 
         // if this is the last child,

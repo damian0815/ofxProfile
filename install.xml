@@ -1,0 +1,23 @@
+<install>
+    <name>ofxProfiler</name>
+	<author>damian stewart</author>
+	<version>0.1</version>
+
+	<add>
+
+		<!-- 	=====================================================================	-->
+		<!--	========================== add per project using this addon =========	-->
+		<!-- 	=====================================================================	-->
+
+		<src>
+			<folder name="addons/ofxProfiler/src">						
+				<file>../../../addons/ofxProfiler/src/ofxProfiler.h</file>
+				<file>../../../addons/ofxProfiler/src/ofxProfiler.cpp</file>
+			</folder>
+		</src>
+
+		<link>
+		</link>
+		
+	</add>
+</install>
