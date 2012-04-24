@@ -45,7 +45,7 @@ ofxProfileContext::~ofxProfileContext()
         delete toplevel;
 }
 
-ofxProfileContext* ofxProfile::GetContext()
+ofxProfileContext* ofxProfile::getContext()
 {
 	ofThread* currentThread = ofThread::getCurrentThread();
 	lock.lock();
@@ -77,7 +77,7 @@ ofxProfileContext* ofxProfile::GetContext()
 
 
 
-void ofxProfile::Clear()
+void ofxProfile::clear()
 {
     // get lock
     lock.lock();
@@ -93,9 +93,9 @@ void ofxProfile::Clear()
 
 }
 
-void ofxProfile::SectionPush(const std::string &name)
+void ofxProfile::sectionPush(const std::string &name)
 {
-	ofxProfileContext* context = GetContext();
+	ofxProfileContext* context = getContext();
 	assert( context->current );
 
 	// try to grab the section out of the db
@@ -119,12 +119,12 @@ void ofxProfile::SectionPush(const std::string &name)
 }
 
 
-void ofxProfile::SectionPop()
+void ofxProfile::sectionPop()
 {
     unsigned long endTime = ofGetElapsedTimeMicros();
  
 	// grab the section
-	ofxProfileContext* context = GetContext();
+	ofxProfileContext* context = getContext();
 	ofxProfileSection* s = context->current;
 
     // check we're not popping up too far
@@ -142,7 +142,7 @@ void ofxProfile::SectionPop()
 	context->current = context->current->parent;
 }
 
-string ofxProfile::Describe( ofxProfile::SORT_BY sort )
+string ofxProfile::describe( ofxProfile::SORT_BY sort )
 {
 	string output = "";
 	char buf[1024];
@@ -164,7 +164,7 @@ string ofxProfile::Describe( ofxProfile::SORT_BY sort )
 		else
 			sprintf(buf, "Thread %lx\n", (unsigned long)((*i)->thread) );
 		output += buf;
-		output += (*i)->toplevel->Describe("| ", sort );
+		output += (*i)->toplevel->describe("| ", sort );
 	}
 	lock.unlock();
 	output += "---------------------------------------------------------------------------------------\n";
@@ -201,7 +201,7 @@ bool execution_order_comparator( ofxProfileSection* a, ofxProfileSection* b )
     return a->execOrderId < b->execOrderId;
 }
 
-string ofxProfileSection::Describe( const std::string& prefix, ofxProfile::SORT_BY sort_by )
+string ofxProfileSection::describe( const std::string& prefix, ofxProfile::SORT_BY sort_by )
 {
     std::vector<ofxProfileSection* > childrenVect;
 	for ( ofxProfileSections::iterator i = children.begin();
@@ -245,7 +245,7 @@ string ofxProfileSection::Describe( const std::string& prefix, ofxProfile::SORT_
             nextPrefix = nextPrefix.substr(0, nextPrefix.size()-2 ) + std::string("  ");
         }
         // next deeper level
-        output += sect->Describe( nextPrefix + "| ", sort_by );
+        output += sect->describe( nextPrefix + "| ", sort_by );
 
 	}
 	return output;

@@ -34,94 +34,18 @@
 
 /** ofxProfile
 
-    A thread-safe profiler. Stores and manages execution count, total execution time and 
-	average time per execution of each labelled section, separated by thread.
+ A thread-safe profiler. Stores and manages execution count, total execution time and 
+ average time per execution of each labelled section, separated by thread.
 
-    To use in a particular cpp file, you need to #define PROFILE either globally or in that 
-	file, and #include the ofxProfile.h header. 
-
-	#define PROFILE
-	#include "ofxProfile.h"
-
-    Then use the following macros to profile parts of code:
-
-    * ofxProfileSectionPush(label) and ofxProfileSectionPop()
-
-        Profile code between these calls, storing results in a tree.
-        For example:
-
-            .. unprofiled preprocessing
-            ofxProfileSectionPush("partial section");
-            .. code to be profiled
-            ofxProfileSectionPop();
-            .. unprofiled postprocessing
-
-        Or for nested output:
-
-            ofxProfileSectionPush("two-step process");
-                .. preprocessing code
-                ofxProfileSectionPush("step 1");
-                .. step 1 code
-                ofxProfileSectionPop();
-                ofxProfileSectionPush("step 2");
-                .. step 2 code
-                ofxProfileSectionPop();
-            ofxProfileSectionPop();
-
-        will produce output like this:
- 
-            + two-step process      <total time for steps 1 + 2 + preprocessing> ...
-			  + step 1              <time for step 1> ...
-			  + step 2              <time for step 2> ...
-
-        NOTE: all labels at a given level in the tree must be unique.
-
-    * ofxProfileThisFunction()
-
-        Wraps the current function in a pair of
-        ofxProfileSectionPush( function_name ) and ofxProfileSectionPop calls.
-
-    * ofxProfileThisBlock(label)
-
-        Wraps the current block (the code between the current level { and })
-        in a pair of ofxProfileSectionPush( label ) and ofxProfileSectionPop
-        calls.
-
-        eg:
-
-            if ( test_condition )
-            {
-                ofxProfileThisBlock( "test passed" );
-                // code to run on test condition
-            }
-
-
-    To display profile results, call ofxProfile::Display(). 
-	To fetch results as a string, call ofxProfile::Describe().
- 
-	NOTES
- 
-	If PROFILE is not #defined, the profiling code is not executed. This means you can leave
-	profiling code in place for release builds and not have it impact on performance.
- 
-	Profiling is invasive, this means it will have an impact on execution times. Output from 
-	ofxProfile is therefore not 100% accurate but is usually good enough to help nail down
-	performance bottlenecks.
- 
-	OpenGL may do all sorts of interesting things behind your back, that ofxProfiler doesn't 
-	kno about. If you want to profile OpenGL calls please use a proper OpenGL profiler instead.
- 
-
-
-@author Damian
+ see readme.md for details.
 
 */
 
 
 /// macros
 #ifdef PROFILE
-#define ofxProfileSectionPush( label ) ofxProfile::SectionPush( label );
-#define ofxProfileSectionPop() ofxProfile::SectionPop();
+#define ofxProfileSectionPush( label ) ofxProfile::sectionPush( label );
+#define ofxProfileSectionPop() ofxProfile::sectionPop();
 #define ofxProfileThisFunction() volatile ofxProfileFunctionProfiler __function_profiler_object__( __FUNCTION__ );
 #define ofxProfileThisBlock( label ) volatile ofxProfileFunctionProfiler __section_profiler_object__##__LINE__( label );
 #warning Profiling with ofxProfile enabled
@@ -160,22 +84,22 @@ class ofxProfile
 {
 public:
     /// clear the database and restart profiling
-    static void Clear();
+    static void clear();
 
 	/// start a section
-	static void SectionPush( const std::string& name = "unlabelled section" );
+	static void sectionPush( const std::string& name = "unlabelled section" );
 	/// end a section
-	static void SectionPop();
-
-	/// return a pointer to the context for the current thread
-	static ofxProfileContext* GetContext();
+	static void sectionPop();
 
 	/// show profiles recorded. SORT_BY defines sort order.
 	typedef enum _SORT_BY { SORT_EXECUTION, SORT_TIME } SORT_BY;
-	static string Describe( SORT_BY sort = SORT_TIME );
-	static void Display( SORT_BY sort = SORT_TIME ) { ofLogNotice( "ofxProfile", "\n" + Describe( sort ) ); }
+	static string describe( SORT_BY sort = SORT_TIME );
+	static void display( SORT_BY sort = SORT_TIME ) { ofLogNotice( "ofxProfile", "\n" + describe( sort ) ); }
 
 private:
+	/// return a pointer to the context for the current thread
+	static ofxProfileContext* getContext();
+	
 
 	typedef std::vector<ofxProfileContext*> ofxProfileContexts;
 	static ofxProfileContexts contexts;
@@ -189,7 +113,7 @@ public:
 	ofxProfileSection();
 	~ofxProfileSection();
 
-	string Describe( const std::string& prefix, ofxProfile::SORT_BY sortBy );
+	string describe( const std::string& prefix, ofxProfile::SORT_BY sortBy );
 
 	int callCount;
 	unsigned long totalTime;
@@ -230,9 +154,9 @@ class ofxProfileFunctionProfiler
 {
 public:
 	ofxProfileFunctionProfiler( const char* function_name )
-	{	ofxProfile::SectionPush(function_name);	}
+	{	ofxProfile::sectionPush(function_name);	}
 	~ofxProfileFunctionProfiler()
-	{	ofxProfile::SectionPop(); }
+	{	ofxProfile::sectionPop(); }
 };
 
 
