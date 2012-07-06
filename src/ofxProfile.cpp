@@ -33,6 +33,7 @@
 #include "ofThread.h"
 #include "ofConstants.h"
 #include "ofUtils.h"
+#include <assert.h>
 
 ofxProfile::ofxProfileContexts ofxProfile::contexts;
 ofMutex ofxProfile::lock;
