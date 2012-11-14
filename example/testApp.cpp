@@ -55,10 +55,10 @@ void testApp::draw(){
 void testApp::keyPressed(int key){
 
 	if ( key == 'd' )
-		lastDump = ofxProfile::Describe();
+		lastDump = ofxProfile::describe();
 	else if ( key == 'c' )
 	{
-		ofxProfile::Clear();
+		ofxProfile::clear();
 		lastDump = "";
 	}
 }
