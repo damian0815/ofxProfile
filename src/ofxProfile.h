@@ -48,7 +48,13 @@
 #define ofxProfileSectionPop() ofxProfile::sectionPop();
 #define ofxProfileThisFunction() volatile ofxProfileFunctionProfiler __function_profiler_object__( __FUNCTION__ );
 #define ofxProfileThisBlock( label ) volatile ofxProfileFunctionProfiler __section_profiler_object__##__LINE__( label );
+
+#ifdef _MSC_VER
+#pragma message ("Profiling with ofxProfile enabled")
+#else
 #warning Profiling with ofxProfile enabled
+#endif
+
 #else
 #define ofxProfileSectionPush( label ) ;
 #define ofxProfileSectionPop() ;
